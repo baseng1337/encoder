@@ -2,7 +2,7 @@
 /*
     XSHIKATA ENCODER V6 (INSANE EDITION)
     UI: Cyberpunk V1 (Preserved)
-    New Methods: RC4, Invisible Ink, Emoji Crypt
+    New Methods: All Previous + Bitwise Inversion (Method 13 - Final Boss)
 */
 
 $result = "";
@@ -15,14 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($code)) {
         $error = "Input code cannot be empty!";
     } else {
-        // 1. BERSIHKAN TAG PHP (Wajib agar eval jalan)
+        // 1. BERSIHKAN TAG PHP
         $clean_code = trim($code);
         $clean_code = preg_replace('/^<\?php\s*/i', '', $clean_code);
         $clean_code = preg_replace('/\?>$/', '', $clean_code);
         $clean_code = trim($clean_code);
 
         // ======================================================
-        // METHOD 1: MATHEMATICAL SHIFT (Classic)
+        // METHOD 1: MATHEMATICAL SHIFT
         // ======================================================
         if ($method == 'math') {
             $key = "xshikata";
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ======================================================
-        // METHOD 2: QUANTUM GZIP (Compression)
+        // METHOD 2: QUANTUM GZIP
         // ======================================================
         elseif ($method == 'gzip') {
             $compressed = gzdeflate($clean_code, 9);
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ======================================================
-        // METHOD 3: BINARY XOR (Strong)
+        // METHOD 3: BINARY XOR
         // ======================================================
         elseif ($method == 'xor') {
             $key = substr(md5(time()), 0, 8);
@@ -61,12 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ======================================================
-        // METHOD 4: RC4 GHOST (MILITARY GRADE-ISH STREAM CIPHER)
+        // METHOD 4: RC4 GHOST
         // ======================================================
         elseif ($method == 'rc4') {
-            $key = md5(microtime()); // Kunci dinamis
-            
-            // Fungsi Enkripsi RC4 PHP Native
+            $key = md5(microtime());
             $s = array(); for($i=0;$i<256;$i++){$s[$i]=$i;}
             $j = 0;
             for($i=0;$i<256;$i++){
@@ -80,49 +78,228 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $temp = $s[$i]; $s[$i] = $s[$j]; $s[$j] = $temp;
                 $res .= $clean_code[$y] ^ chr($s[($s[$i] + $s[$j]) % 256]);
             }
-            
             $payload = base64_encode($res);
-            
-            // Decoder RC4 (Minified)
             $decoder = 'function xshikata($d,$k){$s=range(0,255);$j=0;for($i=0;$i<256;$i++){$j=($j+$s[$i]+ord($k[$i%strlen($k)]))%256;$t=$s[$i];$s[$i]=$s[$j];$s[$j]=$t;}$i=0;$j=0;$r="";$d=base64_decode($d);for($y=0;$y<strlen($d);$y++){$i=($i+1)%256;$j=($j+$s[$i])%256;$t=$s[$i];$s[$i]=$s[$j];$s[$j]=$t;$r.=$d[$y]^chr($s[($s[$i]+$s[$j])%256]);}eval($r);}';
-            
             $result = '<?php' . "\n" . '/* Encoded: RC4 Ghost */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\', \'' . $key . '\');' . "\n" . '?>';
         }
 
         // ======================================================
-        // METHOD 5: INVISIBLE INK (ZERO WIDTH STEGANOGRAPHY)
+        // METHOD 5: INVISIBLE INK
         // ======================================================
         elseif ($method == 'invisible') {
-            // Konsep: Ubah binary 0 jadi ZeroWidthSpace, 1 jadi ZeroWidthNonJoiner
             $bin = '';
             for($i=0; $i<strlen($clean_code); $i++) {
                 $bin .= sprintf("%08d", decbin(ord($clean_code[$i])));
             }
-            
-            // Mapping: 0 -> \xE2\x80\x8B, 1 -> \xE2\x80\x8C
             $payload = str_replace(['0', '1'], ["\xE2\x80\x8B", "\xE2\x80\x8C"], $bin);
-            
-            // Decoder Invisible
             $decoder = 'function xshikata($s){$b=str_replace(["\xE2\x80\x8B","\xE2\x80\x8C"],["0","1"],$s);$o="";for($i=0;$i<strlen($b);$i+=8){$o.=chr(bindec(substr($b,$i,8)));}eval($o);}';
-            
-            // Karena payloadnya karakter tak terlihat, kita bungkus hati-hati
             $result = '<?php' . "\n" . '/* Encoded: Invisible Ink (Select Empty Space Below to See) */' . "\n" . $decoder . "\n" . 'xshikata("' . $payload . '");' . "\n" . '?>';
         }
 
         // ======================================================
-        // METHOD 6: EMOJI CRYPT (VISUAL OBFUSCATION)
+        // METHOD 6: EMOJI CRYPT
         // ======================================================
         elseif ($method == 'emoji') {
             $hex = bin2hex($clean_code);
-            // Peta 0-f ke Emoji
             $map = ['0'=>'🌑','1'=>'🌒','2'=>'🌓','3'=>'🌔','4'=>'🌕','5'=>'🌖','6'=>'🌗','7'=>'🌘','8'=>'🌙','9'=>'🌚','a'=>'🌛','b'=>'🌜','c'=>'🌝','d'=>'🌞','e'=>'⭐','f'=>'🌟'];
-            
             $payload = strtr($hex, $map);
-            
-            // Decoder Emoji
             $decoder = 'function xshikata($e){$m=["🌑"=>"0","🌒"=>"1","🌓"=>"2","🌔"=>"3","🌕"=>"4","🌖"=>"5","🌗"=>"6","🌘"=>"7","🌙"=>"8","🌚"=>"9","🌛"=>"a","🌜"=>"b","🌝"=>"c","🌞"=>"d","⭐"=>"e","🌟"=>"f"];$h=strtr($e,$m);eval(pack("H*",$h));}';
-            
             $result = '<?php' . "\n" . '/* Encoded: Emoji Crypt */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
+        }
+
+        // ======================================================
+        // METHOD 7: SWITCH-CASE STATE MACHINE
+        // ======================================================
+        elseif ($method == 'switch') {
+            $chunk_size = 8;
+            $chunks = str_split($clean_code, $chunk_size);
+            $ids = [];
+            for($i=0; $i<=count($chunks); $i++) { $ids[] = mt_rand(100000, 999999); }
+            $cases = [];
+            for ($i = 0; $i < count($chunks); $i++) {
+                $curr_id = $ids[$i];
+                $next_id = $ids[$i+1];
+                $hex_chunk = '';
+                for ($j = 0; $j < strlen($chunks[$i]); $j++) { $hex_chunk .= '\x' . bin2hex($chunks[$i][$j]); }
+                $cases[] = "case $curr_id: \$o.=\"$hex_chunk\"; \$s=$next_id; break;";
+            }
+            $last_id = end($ids);
+            $cases[] = "case $last_id: eval(\$o); break 2;";
+            shuffle($cases);
+            $start_id = $ids[0];
+            $switch_block = implode("\n", $cases);
+            $decoder = "\$s=$start_id; \$o=\"\"; while(true) { switch(\$s) { $switch_block } }";
+            $result = "<?php\n/* Encoded: Switch-Case Machine (Native Hex) */\n$decoder\n?>";
+        }
+
+        // ======================================================
+        // METHOD 8: GOTO STEALTH (EVAL)
+        // ======================================================
+        elseif ($method == 'goto') {
+            $chunk_size = 12;
+            $chunks = str_split($clean_code, $chunk_size);
+            $var_name = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5); 
+            $labels = [];
+            for($i=0; $i<=count($chunks); $i++) { $labels[] = '_' . strtoupper(uniqid()); }
+            $blocks = [];
+            for ($i = 0; $i < count($chunks); $i++) {
+                $curr_label = $labels[$i];
+                $next_label = $labels[$i+1];
+                $hex_chunk = '';
+                for ($j = 0; $j < strlen($chunks[$i]); $j++) { $hex_chunk .= '\x' . bin2hex($chunks[$i][$j]); }
+                $blocks[] = "$curr_label: $var_name.=\"$hex_chunk\"; goto $next_label;";
+            }
+            shuffle($blocks);
+            $start_label = $labels[0];
+            $end_label = end($labels);
+            $header = "$var_name=''; goto $start_label;";
+            $body = implode("\n", $blocks);
+            $footer = "$end_label: eval($var_name);";
+            $result = "<?php\n/* Encoded: Goto Stealth (With Eval) */\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
+        }
+
+        // ======================================================
+        // METHOD 9: GOTO STEALTH (NO EVAL)
+        // ======================================================
+        elseif ($method == 'goto_noeval') {
+            $full_payload = "<?php\n" . $clean_code . "\n?>";
+            $chunk_size = 10;
+            $chunks = str_split($full_payload, $chunk_size);
+            $var_name = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6); 
+            $labels = [];
+            for($i=0; $i<=count($chunks); $i++) { $labels[] = 'L' . mt_rand(1000,9999) . strtoupper(uniqid()); }
+            $blocks = [];
+            for ($i = 0; $i < count($chunks); $i++) {
+                $curr_label = $labels[$i];
+                $next_label = $labels[$i+1];
+                $hex_chunk = '';
+                for ($j = 0; $j < strlen($chunks[$i]); $j++) { $hex_chunk .= '\x' . bin2hex($chunks[$i][$j]); }
+                $blocks[] = "$curr_label: $var_name.=\"$hex_chunk\"; goto $next_label;";
+            }
+            shuffle($blocks);
+            $start_label = $labels[0];
+            $end_label = end($labels);
+            $header = "$var_name=''; goto $start_label;";
+            $body = implode("\n", $blocks);
+            $footer = "$end_label: \$t=tempnam(sys_get_temp_dir(),'x'); file_put_contents(\$t,$var_name); include(\$t); unlink(\$t);";
+            $result = "<?php\n/* Encoded: Goto Stealth (No Eval) */\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
+        }
+
+        // ======================================================
+        // METHOD 10: GOTO NATIVE
+        // ======================================================
+        elseif ($method == 'goto_native') {
+            $tokens = token_get_all("<?php " . $clean_code);
+            $obfuscated_code = '';
+            foreach ($tokens as $token) {
+                if (is_array($token)) {
+                    $id = $token[0]; $text = $token[1];
+                    if ($id === T_COMMENT || $id === T_DOC_COMMENT) { continue; }
+                    if ($id === T_CONSTANT_ENCAPSED_STRING) {
+                        $raw_str = substr($text, 1, -1); $encoded_str = '';
+                        for ($i = 0; $i < strlen($raw_str); $i++) {
+                            $ord = ord($raw_str[$i]);
+                            if (mt_rand(0, 1)) { $encoded_str .= '\\x' . dechex($ord); } 
+                            else { $encoded_str .= '\\' . decoct($ord); }
+                        }
+                        $obfuscated_code .= '"' . $encoded_str . '"'; continue;
+                    }
+                    $obfuscated_code .= $text;
+                } else { $obfuscated_code .= $token; }
+            }
+            $obfuscated_code = preg_replace('/^<\?php\s*/i', '', trim($obfuscated_code));
+            $label_start = "xshikata_" . substr(md5(time()), 0, 4);
+            $label_code  = "L" . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 5);
+            $label_end   = "E" . substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 5);
+            $result = "<?php\n goto $label_start; $label_code: $obfuscated_code goto $label_end; $label_start: goto $label_code; $label_end: \n?>";
+        }
+
+        // ======================================================
+        // METHOD 11: OOP DESTRUCTOR (FIXED)
+        // ======================================================
+        elseif ($method == 'oop') {
+            $var_name = "X" . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $prop_name = "_" . substr(md5(time()), 0, 4);
+            $payload_ready = "<?php " . $clean_code . " ?>";
+            $hex_payload = bin2hex($payload_ready);
+            $class_code = "class $var_name { private $$prop_name = '$hex_payload'; public function __destruct() { \$c = hex2bin(\$this->$prop_name); \$t = tempnam(sys_get_temp_dir(), 'pk'); if(file_put_contents(\$t, \$c)) { include(\$t); unlink(\$t); } } } new $var_name();";
+            $class_code = trim(preg_replace('/\s+/', ' ', $class_code));
+            $result = "<?php\n/* Encoded: OOP Destructor (Ghost Class) */\n$class_code\n?>";
+        }
+
+        // ======================================================
+        // METHOD 12: DYNAMIC FUNCTION MAPPING
+        // ======================================================
+        elseif ($method == 'dynamic_call') {
+            $payload_ready = "<?php " . $clean_code . " ?>";
+            $hex_payload = bin2hex($payload_ready);
+            $v_payload = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_func_write = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            $v_func_unlk = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            $hex_fpc = bin2hex('file_put_contents');
+            $hex_unl = bin2hex('unlink');
+            $final_logic = "$v_payload=hex2bin('$hex_payload');$v_func_write=hex2bin('$hex_fpc');$v_func_unlk=hex2bin('$hex_unl');$v_path=tempnam(sys_get_temp_dir(),'gc');$v_func_write($v_path,$v_payload);include($v_path);$v_func_unlk($v_path);";
+            $result = "<?php\n/* Encoded: Dynamic Function Mapping (Ghost Call) */\n$final_logic\n?>";
+        }
+
+        // ======================================================
+        // METHOD 13: BITWISE INVERSION (NO-FUNC DECODE) - FINAL BOSS
+        // ======================================================
+        elseif ($method == 'bitwise') {
+            // Konsep: Menggunakan operator NOT (~) pada string.
+            // Tidak ada fungsi hex2bin atau base64_decode. Murni manipulasi bit native.
+            
+            // 1. Siapkan data fungsi dan payload
+            $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir'];
+            $vars = [];
+            
+            // Generate nama variabel acak
+            foreach($funcs as $f) {
+                $vars[$f] = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            }
+            $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $v_payload = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            
+            // 2. Encode Payload (dibungkus tag PHP)
+            $payload_ready = "<?php " . $clean_code . " ?>";
+            $encoded_payload = ~$payload_ready; // Bitwise NOT
+            
+            // 3. Encode Nama Fungsi
+            // Kita escape karakter binary agar aman di dalam string PHP ("\xFF...")
+            function safe_escape($str) {
+                $out = '';
+                for ($i = 0; $i < strlen($str); $i++) {
+                    $out .= '\x' . bin2hex($str[$i]);
+                }
+                return $out;
+            }
+            
+            $str_fpc = safe_escape(~$funcs[0]);
+            $str_unl = safe_escape(~$funcs[1]);
+            $str_tmp = safe_escape(~$funcs[2]);
+            $str_sys = safe_escape(~$funcs[3]);
+            $str_pay = safe_escape($encoded_payload);
+            
+            // 4. Susun Logic
+            // Dekode terjadi otomatis saat operator ~ dipanggil pada string binary
+            $logic = "
+$vars[file_put_contents] = ~\"$str_fpc\";
+$vars[unlink] = ~\"$str_unl\";
+$vars[tempnam] = ~\"$str_tmp\";
+$vars[sys_get_temp_dir] = ~\"$str_sys\";
+$v_payload = ~\"$str_pay\";
+
+$v_path = {$vars['tempnam']}({$vars['sys_get_temp_dir']}(), 'bw');
+{$vars['file_put_contents']}($v_path, $v_payload);
+include($v_path);
+{$vars['unlink']}($v_path);
+";
+            // Minify
+            $logic = trim(preg_replace('/\s+/', '', $logic));
+            $logic = str_replace(';', '; ', $logic); // Beri spasi sedikit
+            
+            $result = "<?php\n/* Encoded: Bitwise Inversion (No-Func Decode) */\n$logic\n?>";
         }
     }
 }
@@ -257,6 +434,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <option value="rc4">METHOD 4: RC4 Ghost (Military Grade)</option>
                     <option value="invisible">METHOD 5: Invisible Ink (Stealth)</option>
                     <option value="emoji">METHOD 6: Emoji Crypt (Visual)</option>
+                    <option value="switch">METHOD 7: Switch-Case Machine (No Base64)</option>
+                    <option value="goto">METHOD 8: Goto Stealth (With Eval)</option>
+                    <option value="goto_noeval">METHOD 9: Goto Stealth (No Eval)</option>
+                    <option value="goto_native">METHOD 10: Goto Native (Mixed Strings)</option>
+                    <option value="oop">METHOD 11: OOP Destructor (Ghost Class)</option>
+                    <option value="dynamic_call">METHOD 12: Dynamic Function Mapping (Ghost Call)</option>
+                    <option value="bitwise">METHOD 13: Bitwise Inversion (No-Func Decode)</option>
                 </select>
                 <button type="submit" class="btn-main">ENCODE PAYLOAD</button>
             </div>
